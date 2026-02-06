@@ -4,10 +4,12 @@ This file provides guidance to Claude Code when working with the forecaster code
 
 ## Overview
 
-Application description here.
+**Forecaster** is a local RAG (Retrieval-Augmented Generation) system for querying structured data using natural language. Built to demonstrate zero-cloud-cost AI with local LLMs.
+
+**Challenge:** Match/exceed ControlCore's capabilities (https://github.com/excessus1/controlcore_pub)
 
 **Target Environment:** Banner (10.0.0.33)
-**Port Block:** {{PORT_BLOCK}} (web=3351)
+**Port Block:** 3351-3354 (AnythingLLM=3351, Dify=3352, PostgreSQL=3353, Qdrant=3354)
 **Domain:** forecaster.nextlevelguild.com
 
 ## Critical Rules
@@ -54,13 +56,37 @@ ssh 10.0.0.33
 
 ## Technology Stack
 
-> **Decide per-project.** Update this table once you choose your stack.
+| Purpose | Tool | Location |
+|---------|------|----------|
+| Chat Interface | AnythingLLM | Banner:3351 |
+| Workflow Builder | Dify | Banner:3352 |
+| Vector DB | PostgreSQL + pgvector | Banner:3353 |
+| Vector DB (alt) | Qdrant | Banner:3354 |
+| LLM Inference | Ollama (Mistral 7B) | Jarvis:11434 |
+| Embeddings | nomic-embed-text | Jarvis (via Ollama) |
 
-| Purpose | Tool |
-|---------|------|
-| Frontend | TBD |
-| Backend | TBD |
-| Database | TBD |
+## Architecture
+
+```
+User → AnythingLLM (chat) → Ollama (Jarvis) → Text-to-SQL Agent
+                                    ↓
+                          PostgreSQL + pgvector (Banner)
+                                    ↓
+                          Natural language answer
+```
+
+## Project Plan
+
+Full project plan: [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md)
+
+## Deployment Components
+
+| Component | Image | Port | Purpose |
+|-----------|-------|------|---------|
+| AnythingLLM | mintplexlabs/anythingllm | 3351 | User-facing chat |
+| Dify | langgenius/dify | 3352 | Visual workflow builder |
+| PostgreSQL | pgvector/pgvector:pg16 | 3353 | Data + vector storage |
+| Qdrant | qdrant/qdrant | 3354 | Fast vector search |
 
 ## Available Infrastructure Services
 
