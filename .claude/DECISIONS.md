@@ -138,3 +138,61 @@ Track architectural and technical decisions, tagged with conversation ID.
 **Decision:** Download embedding model on container start
 **Rationale:** Simpler Dockerfile. Adds ~30s to cold start. Could be baked into image for faster startup if needed.
 **Date:** 2026-02-06
+
+---
+
+### Phase 2: IoT Control Layer
+
+**Conv:** conv-20260206
+**Decision:** Use Mosquitto as MQTT broker, Sauron as MQTT client
+**Rationale:** Mosquitto is battle-tested, lightweight, supports WebSockets for web clients. Sauron acts as the central orchestrator that sends commands to IoT nodes, not a broker itself. Nodes connect directly to Mosquitto.
+**Date:** 2026-02-06
+
+---
+
+**Conv:** conv-20260206
+**Decision:** Topic structure: `controlcore/{node_uuid}/{type}/{capability}`
+**Rationale:** Hierarchical structure enables wildcard subscriptions. Node UUID provides unique identification. Type (status/sensor/command/response) separates message purposes. Capability allows per-sensor subscriptions.
+**Date:** 2026-02-06
+
+---
+
+**Conv:** conv-20260206
+**Decision:** Hybrid command parsing: pattern-based first, LLM fallback
+**Rationale:** Pattern matching handles 80% of commands instantly without API calls. LLM fallback catches complex/ambiguous commands. Pattern confidence threshold (0.7) triggers LLM fallback.
+**Date:** 2026-02-06
+
+---
+
+**Conv:** conv-20260206
+**Decision:** All AI-initiated actions must pass safety engine
+**Rationale:** Critical for unattended operation. Safety rules prevent dangerous conditions (watering during freeze, extreme temperatures). Built-in rules cannot be disabled. Database rules can be customized.
+**Date:** 2026-02-06
+
+---
+
+**Conv:** conv-20260206
+**Decision:** Safety decisions: APPROVED, DENIED, MODIFIED, REQUIRES_CONFIRMATION
+**Rationale:** MODIFIED allows automatic parameter adjustment (e.g., 120min watering → 60min max). REQUIRES_CONFIRMATION enables human-in-the-loop for high-risk actions. All decisions are logged for audit.
+**Date:** 2026-02-06
+
+---
+
+**Conv:** conv-20260206
+**Decision:** Built-in critical safety rules hardcoded in safety engine
+**Rationale:** These rules cannot be disabled via database: no watering during freeze, max single watering 60min, max daily watering 180min, temperature limits 40-90°F, no irrigation during high wind.
+**Date:** 2026-02-06
+
+---
+
+**Conv:** conv-20260206
+**Decision:** Action log stores: initiator, action, parameters, original_request, ai_reasoning, safety_check_result, safety_notes
+**Rationale:** Complete audit trail for AI-initiated actions. Enables post-incident analysis. Supports "show me what the AI did yesterday" queries.
+**Date:** 2026-02-06
+
+---
+
+**Conv:** conv-20260206
+**Decision:** Lazy-load command parser, MQTT service, and safety engine
+**Rationale:** Faster API startup. Services only initialized when first needed. MQTT disabled gracefully if MQTT_HOST not set (allows query-only mode).
+**Date:** 2026-02-06
